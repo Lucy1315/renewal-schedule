@@ -1,0 +1,3 @@
+run_datetime,category,target_year_month,item_count,status,error_message,recipients
+2026-02-27T21:53:36,의약품,2026-08,3,FAIL,"(535, b'5.7.8 Username and Password not accepted. For more information, go to\n5.7.8  https://support.google.com/mail/?p=BadCredentials 98e67ed59e1d1-359018838b2sm8873677a91.5 - gsmtp')",jisoo.kim@samyang.com
+2026-02-27T21:54:23,의약품,2026-08,3,SUCCESS,,jisoo.kim@samyang.com

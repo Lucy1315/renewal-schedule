@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+logs/preview_*.html
+.claude/
+# 루트 CSV 원본 (data/ 디렉터리에 복사본 존재)
+/의약품갱신일정.csv
+/의료기기갱신일정.csv
