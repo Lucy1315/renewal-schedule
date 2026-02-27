@@ -18,7 +18,8 @@ class MedicineItem:
     허가일: date
     품목유효기간: date
     갱신신청기한: date
-    알림발송일: date          # edate(갱신신청기한, -3)
+    알림발송일: date          # edate(갱신신청기한, -3) — 3개월 전
+    알림발송일_1M: date       # edate(갱신신청기한, -1) — 1개월 전
     업종: str
     제조수입: str
     허가번호: str
@@ -44,7 +45,8 @@ class DeviceItem:
     유효기간_종료: date
     갱신신청기한_시작: date
     갱신신청기한_종료: date
-    알림발송일: date          # 갱신신청기한_시작일이 속한 달의 1일
+    알림발송일: date          # edate(갱신신청기한_시작, -3) — 3개월 전
+    알림발송일_1M: date       # edate(갱신신청기한_시작, -1) — 1개월 전
     row_index: int
 
 
@@ -54,6 +56,7 @@ class AlertTarget:
     category: Category
     target_year: int
     target_month: int
+    alert_type: str           # "3M" or "1M"
     items_with_highlight: list[tuple]  # (MedicineItem|DeviceItem, is_highlight: bool)
 
 
@@ -63,6 +66,7 @@ class SendRecord:
     run_datetime: str         # ISO format
     category: str             # "의약품" | "의료기기"
     target_year_month: str    # "YYYY-MM"
+    alert_type: str           # "3M" | "1M"
     item_count: int
     status: str               # "SUCCESS" | "FAIL"
     error_message: str

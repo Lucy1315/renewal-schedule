@@ -39,14 +39,20 @@ def dev_deadline(i):
     return i.갱신신청기한_시작
 
 
-# 이번 달 / 다음 달 대상
-this_month_med = sum(1 for i in medicines if i.알림발송일.year == today.year and i.알림발송일.month == today.month)
-this_month_dev = sum(1 for i in devices if i.알림발송일.year == today.year and i.알림발송일.month == today.month)
+# 이번 달 / 다음 달 알림 대상 (3M 또는 1M 알림이 이번달/다음달에 해당하는 건)
+def _alert_in_month(item, yr, mo):
+    return (
+        (item.알림발송일.year == yr and item.알림발송일.month == mo)
+        or (item.알림발송일_1M.year == yr and item.알림발송일_1M.month == mo)
+    )
+
+this_month_med = sum(1 for i in medicines if _alert_in_month(i, today.year, today.month))
+this_month_dev = sum(1 for i in devices if _alert_in_month(i, today.year, today.month))
 
 next_month = today.replace(day=1) + timedelta(days=32)
 next_month = next_month.replace(day=1)
-next_month_med = sum(1 for i in medicines if i.알림발송일.year == next_month.year and i.알림발송일.month == next_month.month)
-next_month_dev = sum(1 for i in devices if i.알림발송일.year == next_month.year and i.알림발송일.month == next_month.month)
+next_month_med = sum(1 for i in medicines if _alert_in_month(i, next_month.year, next_month.month))
+next_month_dev = sum(1 for i in devices if _alert_in_month(i, next_month.year, next_month.month))
 
 col1, col2, col3, col4, col5 = st.columns(5)
 col1.metric("이번 달 대상", f"{this_month_med + this_month_dev}건",

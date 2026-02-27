@@ -24,7 +24,7 @@ def parse_date_range(text: str) -> tuple[date, date]:
 
 
 def load_medicine_csv(path: str | Path) -> list[MedicineItem]:
-    """의약품 CSV 로딩. 알림발송일 = edate(갱신신청기한, -3)."""
+    """의약품 CSV 로딩. 알림발송일 = edate(갱신신청기한, -3), 알림발송일_1M = edate(갱신신청기한, -1)."""
     items: list[MedicineItem] = []
     path = Path(path)
 
@@ -39,6 +39,7 @@ def load_medicine_csv(path: str | Path) -> list[MedicineItem]:
                     품목유효기간=parse_date(row["품목유효기간"]),
                     갱신신청기한=갱신신청기한,
                     알림발송일=edate(갱신신청기한, -3),
+                    알림발송일_1M=edate(갱신신청기한, -1),
                     업종=row["업종"].strip(),
                     제조수입=row["제조/수입"].strip(),
                     허가번호=row["허가번호"].strip(),
@@ -59,7 +60,7 @@ def load_medicine_csv(path: str | Path) -> list[MedicineItem]:
 
 
 def load_device_csv(path: str | Path) -> list[DeviceItem]:
-    """의료기기 CSV 로딩. 알림발송일 = 갱신신청기한 시작일이 속한 달의 1일."""
+    """의료기기 CSV 로딩. 알림발송일 = edate(갱신신청기한_시작, -3), 알림발송일_1M = edate(갱신신청기한_시작, -1)."""
     items: list[DeviceItem] = []
     path = Path(path)
 
@@ -69,8 +70,6 @@ def load_device_csv(path: str | Path) -> list[DeviceItem]:
             try:
                 유효기간_시작, 유효기간_종료 = parse_date_range(row["유효기간"])
                 갱신_시작, 갱신_종료 = parse_date_range(row["갱신신청기한"])
-                # PRD 규칙: 시작일이 속한 달의 1일
-                알림발송일 = 갱신_시작.replace(day=1)
 
                 제품명 = row["제품명"].replace("\n", " ").strip()
 
@@ -85,7 +84,8 @@ def load_device_csv(path: str | Path) -> list[DeviceItem]:
                     유효기간_종료=유효기간_종료,
                     갱신신청기한_시작=갱신_시작,
                     갱신신청기한_종료=갱신_종료,
-                    알림발송일=알림발송일,
+                    알림발송일=edate(갱신_시작, -3),
+                    알림발송일_1M=edate(갱신_시작, -1),
                     row_index=idx,
                 )
                 items.append(item)

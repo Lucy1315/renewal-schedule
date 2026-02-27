@@ -40,18 +40,19 @@ def _process_alert(
     """단일 카테고리 알림 처리."""
     category_name = alert.category.value
     target_ym = f"{alert.target_year}-{alert.target_month:02d}"
+    alert_type = alert.alert_type  # "3M" or "1M"
 
     # 멱등성 체크
-    if has_been_sent(log_path, category_name, target_ym):
-        logger.info("[%s] %s 이미 발송됨 → skip", category_name, target_ym)
+    if has_been_sent(log_path, category_name, target_ym, alert_type):
+        logger.info("[%s/%s] %s 이미 발송됨 → skip", category_name, alert_type, target_ym)
         return
 
     # 이메일 생성
-    subject = build_email_subject(alert.category, alert.target_year, alert.target_month)
+    subject = build_email_subject(alert.category, alert.target_year, alert.target_month, alert_type)
     body = build_email_body(alert)
     item_count = len(alert.items_with_highlight)
 
-    logger.info("[%s] 대상: %s (%d건)", category_name, target_ym, item_count)
+    logger.info("[%s/%s] 대상: %s (%d건)", category_name, alert_type, target_ym, item_count)
 
     if dry_run:
         logger.info("[DRY-RUN] 메일 제목: %s", subject)
@@ -61,7 +62,7 @@ def _process_alert(
             mark = "★" if is_hl else " "
             logger.info("  %s %s", mark, name)
         # dry-run 시 HTML을 파일로 저장하여 확인 가능하게
-        preview_path = Path(f"logs/preview_{category_name}_{target_ym}.html")
+        preview_path = Path(f"logs/preview_{category_name}_{target_ym}_{alert_type}.html")
         preview_path.parent.mkdir(parents=True, exist_ok=True)
         preview_path.write_text(body, encoding="utf-8")
         logger.info("[DRY-RUN] HTML 미리보기: %s", preview_path)
@@ -86,6 +87,7 @@ def _process_alert(
         run_datetime=datetime.now().isoformat(timespec="seconds"),
         category=category_name,
         target_year_month=target_ym,
+        alert_type=alert_type,
         item_count=item_count,
         status="SUCCESS" if success else "FAIL",
         error_message=error_msg,
@@ -94,9 +96,9 @@ def _process_alert(
     append_send_record(log_path, record)
 
     if success:
-        logger.info("[%s] %s 발송 성공", category_name, target_ym)
+        logger.info("[%s/%s] %s 발송 성공", category_name, alert_type, target_ym)
     else:
-        logger.error("[%s] %s 발송 실패: %s", category_name, target_ym, error_msg)
+        logger.error("[%s/%s] %s 발송 실패: %s", category_name, alert_type, target_ym, error_msg)
 
 
 def main(dry_run: bool = False, target_date: date | None = None) -> None:
@@ -112,17 +114,19 @@ def main(dry_run: bool = False, target_date: date | None = None) -> None:
     # 데이터 로드
     medicines, devices = load_all(paths["medicine_csv"], paths["device_csv"])
 
-    # 의약품 알림
-    med_alert = find_medicine_alerts(medicines, today)
-    if med_alert:
-        _process_alert(med_alert, config, log_path, dry_run)
+    # 의약품 알림 (3M + 1M)
+    med_alerts = find_medicine_alerts(medicines, today)
+    if med_alerts:
+        for alert in med_alerts:
+            _process_alert(alert, config, log_path, dry_run)
     else:
         logger.info("[의약품] 오늘(%s) 발송 대상 없음", today)
 
-    # 의료기기 알림
-    dev_alert = find_device_alerts(devices, today)
-    if dev_alert:
-        _process_alert(dev_alert, config, log_path, dry_run)
+    # 의료기기 알림 (3M + 1M)
+    dev_alerts = find_device_alerts(devices, today)
+    if dev_alerts:
+        for alert in dev_alerts:
+            _process_alert(alert, config, log_path, dry_run)
     else:
         logger.info("[의료기기] 오늘(%s) 발송 대상 없음", today)
 

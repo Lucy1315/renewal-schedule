@@ -57,15 +57,20 @@ class TestLoadMedicineCsv:
         first = items[0]
         assert "팔제론주" in first.제품명
         assert first.갱신신청기한 == date(2026, 8, 19)
-        assert first.알림발송일 == date(2026, 5, 19)
+        assert first.알림발송일 == date(2026, 5, 19)  # 3M
+        assert first.알림발송일_1M == date(2026, 7, 19)  # 1M
 
     def test_alert_date_calculation(self):
-        """모든 의약품의 알림발송일 = edate(갱신신청기한, -3) 확인."""
+        """모든 의약품의 알림발송일 = edate(갱신신청기한, -3), 알림발송일_1M = edate(갱신신청기한, -1) 확인."""
         items = load_medicine_csv(DATA_DIR / "의약품갱신일정.csv")
         for item in items:
-            expected = edate(item.갱신신청기한, -3)
-            assert item.알림발송일 == expected, (
-                f"{item.제품명}: 알림발송일 {item.알림발송일} != 예상 {expected}"
+            expected_3m = edate(item.갱신신청기한, -3)
+            assert item.알림발송일 == expected_3m, (
+                f"{item.제품명}: 알림발송일 {item.알림발송일} != 예상 {expected_3m}"
+            )
+            expected_1m = edate(item.갱신신청기한, -1)
+            assert item.알림발송일_1M == expected_1m, (
+                f"{item.제품명}: 알림발송일_1M {item.알림발송일_1M} != 예상 {expected_1m}"
             )
 
     def test_row_index(self):
@@ -88,19 +93,31 @@ class TestLoadDeviceCsv:
         assert 라풀렌.갱신신청기한_시작 == date(2026, 2, 26)
         assert 라풀렌.갱신신청기한_종료 == date(2026, 5, 27)
 
-    def test_alert_date_prd_rule(self):
-        """의료기기 알림발송일 = 갱신신청기한 시작일이 속한 달의 1일 (PRD 규칙)."""
+    def test_alert_date_3m(self):
+        """의료기기 알림발송일(3M) = edate(갱신신청기한_시작, -3)."""
         items = load_device_csv(DATA_DIR / "의료기기갱신일정.csv")
         라풀렌 = [i for i in items if "라풀렌" in i.제품명][0]
-        # 시작일 2026-02-26 → 2026-02-01
-        assert 라풀렌.알림발송일 == date(2026, 2, 1)
+        # 시작일 2026-02-26 - 3M = 2025-11-26
+        assert 라풀렌.알림발송일 == date(2025, 11, 26)
 
-    def test_all_alert_dates_first_of_month(self):
-        """모든 의료기기의 알림발송일이 해당 월 1일인지 확인."""
+    def test_alert_date_1m(self):
+        """의료기기 알림발송일_1M = edate(갱신신청기한_시작, -1)."""
+        items = load_device_csv(DATA_DIR / "의료기기갱신일정.csv")
+        라풀렌 = [i for i in items if "라풀렌" in i.제품명][0]
+        # 시작일 2026-02-26 - 1M = 2026-01-26
+        assert 라풀렌.알림발송일_1M == date(2026, 1, 26)
+
+    def test_all_alert_dates_edate(self):
+        """모든 의료기기의 알림발송일 = edate(갱신신청기한_시작, -3) 확인."""
         items = load_device_csv(DATA_DIR / "의료기기갱신일정.csv")
         for item in items:
-            assert item.알림발송일.day == 1, (
-                f"{item.품목명}: 알림발송일 {item.알림발송일}의 day가 1이 아님"
+            expected_3m = edate(item.갱신신청기한_시작, -3)
+            assert item.알림발송일 == expected_3m, (
+                f"{item.품목명}: 알림발송일 {item.알림발송일} != 예상 {expected_3m}"
+            )
+            expected_1m = edate(item.갱신신청기한_시작, -1)
+            assert item.알림발송일_1M == expected_1m, (
+                f"{item.품목명}: 알림발송일_1M {item.알림발송일_1M} != 예상 {expected_1m}"
             )
 
     def test_multiline_product_name(self):

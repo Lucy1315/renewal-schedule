@@ -9,6 +9,7 @@ LOG_COLUMNS = [
     "run_datetime",
     "category",
     "target_year_month",
+    "alert_type",
     "item_count",
     "status",
     "error_message",
@@ -27,7 +28,7 @@ def init_log_file(log_path: str | Path) -> None:
 
 
 def read_send_history(log_path: str | Path) -> list[SendRecord]:
-    """발송 이력 전체 로드."""
+    """발송 이력 전체 로드. 기존 로그(alert_type 없음)도 호환."""
     path = Path(log_path)
     if not path.exists():
         return []
@@ -40,6 +41,7 @@ def read_send_history(log_path: str | Path) -> list[SendRecord]:
                     run_datetime=row["run_datetime"],
                     category=row["category"],
                     target_year_month=row["target_year_month"],
+                    alert_type=row.get("alert_type", "3M"),
                     item_count=int(row["item_count"]),
                     status=row["status"],
                     error_message=row["error_message"],
@@ -59,6 +61,7 @@ def append_send_record(log_path: str | Path, record: SendRecord) -> None:
             record.run_datetime,
             record.category,
             record.target_year_month,
+            record.alert_type,
             record.item_count,
             record.status,
             record.error_message,
@@ -70,12 +73,14 @@ def has_been_sent(
     log_path: str | Path,
     category: str,
     target_year_month: str,
+    alert_type: str = "3M",
 ) -> bool:
-    """멱등성 체크: 동일 category + target_year_month에 SUCCESS 기록이 있으면 True."""
+    """멱등성 체크: 동일 category + target_year_month + alert_type에 SUCCESS 기록이 있으면 True."""
     records = read_send_history(log_path)
     return any(
         r.category == category
         and r.target_year_month == target_year_month
+        and r.alert_type == alert_type
         and r.status == "SUCCESS"
         for r in records
     )

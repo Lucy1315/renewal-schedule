@@ -36,6 +36,7 @@ for r in history:
         "실행일시": r.run_datetime,
         "구분": r.category,
         "대상월": r.target_year_month,
+        "알림유형": r.alert_type,
         "건수": r.item_count,
         "상태": r.status,
         "에러": r.error_message,

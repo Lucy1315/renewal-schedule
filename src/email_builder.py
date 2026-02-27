@@ -12,10 +12,12 @@ def build_email_subject(
     category: Category,
     target_year: int,
     target_month: int,
+    alert_type: str = "3M",
 ) -> str:
     """메일 제목 생성."""
     cat = category.value
-    return f"[RPA] {cat} 품목 갱신 신청기한 알림 (신청 기한 {target_year}년 {target_month:02d}월)"
+    type_label = "3개월 전" if alert_type == "3M" else "1개월 전"
+    return f"[RPA] {cat} 품목 갱신 신청기한 알림 ({type_label} / 신청 기한 {target_year}년 {target_month:02d}월)"
 
 
 def build_email_body(alert: AlertTarget) -> str:
