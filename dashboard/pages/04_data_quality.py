@@ -49,7 +49,7 @@ try:
 
         if parse_errors:
             st.warning(f"날짜 파싱 실패: {len(parse_errors)}건")
-            st.dataframe(pd.DataFrame(parse_errors), width="stretch")
+            st.dataframe(pd.DataFrame(parse_errors), use_container_width=True)
             issues.extend([{"파일": "의약품", **e} for e in parse_errors])
         else:
             st.success(f"날짜 파싱: {row_count}건 모두 성공")
@@ -113,7 +113,7 @@ try:
 
         if parse_errors:
             st.warning(f"날짜 파싱 실패: {len(parse_errors)}건")
-            st.dataframe(pd.DataFrame(parse_errors), width="stretch")
+            st.dataframe(pd.DataFrame(parse_errors), use_container_width=True)
         else:
             st.success(f"날짜 파싱: {row_count}건 모두 성공")
 
@@ -121,7 +121,7 @@ try:
         dup_issues = [i for i in issues if i.get("문제") == "중복 품목허가번호"]
         if dup_issues:
             st.warning(f"중복 품목허가번호: {len(dup_issues)}건")
-            st.dataframe(pd.DataFrame(dup_issues), width="stretch")
+            st.dataframe(pd.DataFrame(dup_issues), use_container_width=True)
         else:
             st.success("중복 키 없음")
 
@@ -129,7 +129,7 @@ try:
         if multiline_names:
             st.info(f"줄바꿈 포함 제품명: {len(multiline_names)}건 (로딩 시 자동 처리됨)")
             with st.expander("상세 보기"):
-                st.dataframe(pd.DataFrame(multiline_names), width="stretch")
+                st.dataframe(pd.DataFrame(multiline_names), use_container_width=True)
         else:
             st.success("줄바꿈 포함 제품명 없음")
 
@@ -141,6 +141,6 @@ st.divider()
 st.subheader("전체 요약")
 if issues:
     st.warning(f"총 {len(issues)}건의 이슈 발견")
-    st.dataframe(pd.DataFrame(issues), width="stretch")
+    st.dataframe(pd.DataFrame(issues), use_container_width=True)
 else:
     st.success("데이터 품질 이슈 없음")

@@ -8,7 +8,6 @@ import streamlit as st
 
 from config import load_config, get_file_paths, get_log_path
 from loader import load_all
-from rules import find_device_alerts, find_medicine_alerts
 from send_log import read_send_history
 
 st.header("발송 이력")
@@ -52,7 +51,7 @@ if cat_filter != "전체":
     mask &= df["구분"] == cat_filter
 
 df_filtered = df[mask].sort_values("실행일시", ascending=False).reset_index(drop=True)
-st.dataframe(df_filtered, width="stretch")
+st.dataframe(df_filtered, use_container_width=True)
 
 # --- Drill-down ---
 st.divider()
@@ -79,6 +78,6 @@ if target_months:
             detail = [{"품목명": i.품목명, "갱신신청기한": f"{i.갱신신청기한_시작} ~ {i.갱신신청기한_종료}"} for i in items]
 
         if detail:
-            st.dataframe(pd.DataFrame(detail), width="stretch")
+            st.dataframe(pd.DataFrame(detail), use_container_width=True)
         else:
             st.info("해당 대상월의 품목이 없습니다.")

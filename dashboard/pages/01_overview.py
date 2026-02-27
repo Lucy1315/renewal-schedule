@@ -105,7 +105,7 @@ with col_left:
         "카테고리": ["의약품", "의료기기"],
         "건수": [total_med, total_dev],
     })
-    st.dataframe(df_cat, hide_index=True, width="stretch")
+    st.dataframe(df_cat, hide_index=True, use_container_width=True)
     st.caption(f"전체 {total}건 (의약품 {total_med}건, 의료기기 {total_dev}건)")
 
 with col_right:
