@@ -3,3 +3,6 @@ run_datetime,category,target_year_month,alert_type,item_count,status,error_messa
 2026-02-27T21:54:23,의약품,2026-08,3M,3,SUCCESS,,jisoo.kim@samyang.com
 2026-02-27T22:46:16,의료기기,2026-02,3M,5,FAIL,"(530, b'5.7.0 Authentication Required. For more information, go to\n5.7.0  https://support.google.com/accounts/troubleshooter/2402620. d2e1a72fcca58-8273a01a9dasm5416206b3a.49 - gsmtp', 'popice76@gmail.com')",jisoo.kim@samyang.com
 2026-02-27T22:47:03,의료기기,2026-02,3M,5,SUCCESS,,jisoo.kim@samyang.com
+
+2026-02-27T23:18:40,의료기기,2026-02,1M,5,SUCCESS,,jisoo.kim@samyang.com
+2026-02-27T23:32:43,의약품,2026-08,1M,3,SUCCESS,,jisoo.kim@samyang.com
