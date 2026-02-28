@@ -140,9 +140,15 @@ re-approval/
 4. 발송 성공 후 해당 품목 셀 붉은 테두리 적용 확인
 5. 동일 대상 월 중복 발송 방지 확인
 
+## Resolved Decisions
+
+- [x] 메일 수신자: `jisoo.kim@samyang.com` (config.yaml)
+- [x] 발신자: `popice76@gmail.com` (Gmail SMTP)
+- [x] SMTP: Gmail (smtp.gmail.com:587, TLS), 앱 비밀번호는 환경변수 `SMTP_PASSWORD` (~/.zshrc에 설정)
+- [x] 이메일 본문: "~까지인 품목 정보 안내" (templates/email_base.html)
+- [x] Streamlit Cloud: https://renewal-schedule.streamlit.app (비공개 시 Sharing → Public 변경 필요)
+
 ## Pending Decisions
 
-- [ ] 메일 수신자(TO/CC) 및 발신자 계정 → config.yaml에서 설정
 - [ ] 엑셀 저장 위치(SharePoint/네트워크) 및 파일명 규칙
-- [ ] SMTP 서버 정보 및 인증 설정
 - [ ] "붉은 박스" 정확한 스타일(색상코드, 테두리 두께) → config.yaml excel_update 섹션
