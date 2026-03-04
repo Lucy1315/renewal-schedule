@@ -30,10 +30,13 @@ def build_email_body(alert: AlertTarget) -> str:
     else:
         table_html = _render_device_table(alert.items_with_highlight)
 
+    period_desc = "에 시작되는" if alert.category == Category.DEVICE else "까지인"
+
     return Template(template_str).safe_substitute(
         CATEGORY=alert.category.value,
         TARGET_YEAR=str(alert.target_year),
         TARGET_MONTH=f"{alert.target_month:02d}",
+        PERIOD_DESC=period_desc,
         TABLE_HTML=table_html,
     )
 
