@@ -160,7 +160,7 @@ tab_all, tab_med, tab_dev = st.tabs(["전체", "의약품", "의료기기"])
 with tab_all:
     filtered = apply_filter(df_all)
     cols = ["구분", "제품명/품목명", "허가번호", "갱신신청기한", "D-day", "알림(3M)", "알림(1M)", "발송상태"]
-    styled = filtered[cols].style.applymap(highlight_dday, subset=["D-day"])
+    styled = filtered[cols].style.map(highlight_dday, subset=["D-day"])
     st.dataframe(styled, use_container_width=True, height=600)
     st.caption(f"총 {len(filtered)}건")
 
@@ -168,7 +168,7 @@ with tab_med:
     filtered = apply_filter(df_med, name_col="제품명")
     cols = ["제품명", "허가번호", "허가일", "품목유효기간", "갱신신청기한", "D-day",
             "알림(3M)", "알림(1M)", "전문/일반", "품목분류", "유효기간", "관계부처", "발송상태"]
-    styled = filtered[cols].style.applymap(highlight_dday, subset=["D-day"])
+    styled = filtered[cols].style.map(highlight_dday, subset=["D-day"])
     st.dataframe(styled, use_container_width=True, height=600)
     st.caption(f"의약품 총 {len(filtered)}건")
 
@@ -176,6 +176,6 @@ with tab_dev:
     filtered = apply_filter(df_dev, name_col="품목명")
     cols = ["품목명", "제품명", "품목허가번호", "허가일자", "유효기간",
             "갱신신청기한", "D-day", "알림(3M)", "알림(1M)", "발송상태"]
-    styled = filtered[cols].style.applymap(highlight_dday, subset=["D-day"])
+    styled = filtered[cols].style.map(highlight_dday, subset=["D-day"])
     st.dataframe(styled, use_container_width=True, height=600)
     st.caption(f"의료기기 총 {len(filtered)}건")
