@@ -170,15 +170,19 @@ st.markdown("<br>", unsafe_allow_html=True)
 # ================================================================
 fc1, fc2, fc3, fc4 = st.columns([1, 1, 1, 2])
 with fc1:
+    st.caption("알림기간")
     period = st.selectbox("조회 기간", ["3개월", "6개월", "9개월", "12개월", "전체"],
                           index=1, label_visibility="collapsed")
 with fc2:
+    st.caption("분류")
     cat_filter = st.selectbox("카테고리", ["전체", "의약품", "의료기기"],
                               label_visibility="collapsed")
 with fc3:
+    st.caption("메일 발송")
     status_filter = st.selectbox("발송 상태", ["전체", "발송완료", "미발송"],
                                  label_visibility="collapsed")
 with fc4:
+    st.caption("검색")
     search = st.text_input("제품명/품목명 검색", label_visibility="collapsed",
                            placeholder="제품명 또는 품목명 검색...")
 
