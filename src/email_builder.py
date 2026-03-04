@@ -42,18 +42,19 @@ def _render_medicine_table(
     items_with_highlight: list[tuple[MedicineItem, bool]],
 ) -> str:
     """의약품 HTML 테이블."""
+    table_font = "font-family: 'Malgun Gothic', '맑은 고딕', sans-serif; font-size: 13px;"
     header_style = (
-        "background-color: #4472C4; color: white; "
+        f"background-color: #4472C4; color: white; {table_font} font-weight: bold; "
         "padding: 10px 12px; border: 1px solid #3565a5; text-align: center;"
     )
-    cell_style = "padding: 8px 12px; border: 1px solid #ddd; text-align: center;"
+    cell_style = f"{table_font} padding: 8px 12px; border: 1px solid #ddd; text-align: center;"
     highlight_bg = "background-color: #FFFFCC;"
 
     rows = []
     for idx, (item, is_hl) in enumerate(items_with_highlight, start=1):
-        row_style = highlight_bg if is_hl else ""
+        row_bg = highlight_bg if is_hl else ("background-color: #F9F9F9;" if idx % 2 == 0 else "")
         rows.append(
-            f'  <tr style="{row_style}">'
+            f'  <tr style="{row_bg}">'
             f'<td style="{cell_style}">{idx}</td>'
             f'<td style="{cell_style} text-align: left;">{item.제품명}</td>'
             f'<td style="{cell_style}">{item.허가일}</td>'
@@ -63,7 +64,7 @@ def _render_medicine_table(
         )
 
     return (
-        '<table style="border-collapse: collapse; width: 100%; margin: 16px 0;">\n'
+        f'<table style="border-collapse: collapse; width: 100%; margin: 16px 0; {table_font}">\n'
         f'  <tr><th style="{header_style}">No</th>'
         f'<th style="{header_style}">제품명</th>'
         f'<th style="{header_style}">허가일</th>'
@@ -78,32 +79,35 @@ def _render_device_table(
     items_with_highlight: list[tuple[DeviceItem, bool]],
 ) -> str:
     """의료기기 HTML 테이블."""
+    table_font = "font-family: 'Malgun Gothic', '맑은 고딕', sans-serif; font-size: 13px;"
     header_style = (
-        "background-color: #4472C4; color: white; "
+        f"background-color: #4472C4; color: white; {table_font} font-weight: bold; "
         "padding: 10px 12px; border: 1px solid #3565a5; text-align: center;"
     )
-    cell_style = "padding: 8px 12px; border: 1px solid #ddd; text-align: center;"
+    cell_style = f"{table_font} padding: 8px 12px; border: 1px solid #ddd; text-align: center;"
     highlight_bg = "background-color: #FFFFCC;"
 
     rows = []
     for idx, (item, is_hl) in enumerate(items_with_highlight, start=1):
-        row_style = highlight_bg if is_hl else ""
+        row_bg = highlight_bg if is_hl else ("background-color: #F9F9F9;" if idx % 2 == 0 else "")
         유효기간 = f"{item.유효기간_시작} ~ {item.유효기간_종료}"
         갱신기한 = f"{item.갱신신청기한_시작} ~ {item.갱신신청기한_종료}"
         rows.append(
-            f'  <tr style="{row_style}">'
+            f'  <tr style="{row_bg}">'
             f'<td style="{cell_style}">{idx}</td>'
+            f'<td style="{cell_style} text-align: left;">{item.제품명}</td>'
             f'<td style="{cell_style} text-align: left;">{item.품목명}</td>'
             f'<td style="{cell_style}">{item.품목허가번호}</td>'
             f'<td style="{cell_style}">{item.허가일자}</td>'
-            f'<td style="{cell_style} font-size: 12px;">{유효기간}</td>'
-            f'<td style="{cell_style} font-size: 12px;">{갱신기한}</td>'
+            f'<td style="{cell_style}">{유효기간}</td>'
+            f'<td style="{cell_style}">{갱신기한}</td>'
             f"</tr>"
         )
 
     return (
-        '<table style="border-collapse: collapse; width: 100%; margin: 16px 0;">\n'
+        f'<table style="border-collapse: collapse; width: 100%; margin: 16px 0; {table_font}">\n'
         f'  <tr><th style="{header_style}">No</th>'
+        f'<th style="{header_style}">제품명</th>'
         f'<th style="{header_style}">품목명</th>'
         f'<th style="{header_style}">품목허가번호</th>'
         f'<th style="{header_style}">허가일자</th>'
