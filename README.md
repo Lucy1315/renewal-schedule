@@ -136,4 +136,4 @@ python -m pytest tests/ -v
 
 ## 라이선스
 
-Private
+MIT
