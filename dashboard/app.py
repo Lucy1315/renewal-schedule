@@ -168,11 +168,12 @@ st.markdown("<br>", unsafe_allow_html=True)
 # ================================================================
 # 필터 바
 # ================================================================
-fc1, fc2, fc3, fc4 = st.columns([1, 1, 1, 2])
+fc1, fc2, fc3, fc4 = st.columns([1.5, 1, 1, 2])
 with fc1:
     st.caption("알림기간")
-    period = st.selectbox("조회 기간", ["3개월", "6개월", "9개월", "12개월", "전체"],
-                          index=1, label_visibility="collapsed")
+    period = st.selectbox("조회 기간",
+                          ["전체", "3개월", "6개월", "9개월", "12개월", "직접 설정"],
+                          label_visibility="collapsed")
 with fc2:
     st.caption("분류")
     cat_filter = st.selectbox("카테고리", ["전체", "의약품", "의료기기"],
@@ -186,8 +187,17 @@ with fc4:
     search = st.text_input("제품명/품목명 검색", label_visibility="collapsed",
                            placeholder="제품명 또는 품목명 검색...")
 
-period_days = {"3개월": 90, "6개월": 180, "9개월": 270, "12개월": 365, "전체": 99999}
-cutoff = today + timedelta(days=period_days[period])
+# 직접 설정 시 날짜 범위 선택
+if period == "직접 설정":
+    dc1, dc2 = st.columns(2)
+    with dc1:
+        date_from = st.date_input("시작일", value=today)
+    with dc2:
+        date_to = st.date_input("종료일", value=today + timedelta(days=180))
+else:
+    date_from = today
+    period_days = {"전체": 99999, "3개월": 90, "6개월": 180, "9개월": 270, "12개월": 365}
+    date_to = today + timedelta(days=period_days[period])
 
 
 # ================================================================
@@ -234,25 +244,31 @@ med_rows = []
 for item in medicines:
     d_day = (item.갱신신청기한 - today).days
     ym = f"{item.갱신신청기한.year}-{item.갱신신청기한.month:02d}"
+    # 가장 가까운 미래 알림발송일
+    alert_dates = [d for d in [item.알림발송일, item.알림발송일_1M] if d >= today]
+    nearest_alert = min(alert_dates) if alert_dates else item.알림발송일
     med_rows.append({
         "제품명": item.제품명,
         "허가번호": item.허가번호,
         "품목유효기간": str(item.품목유효기간),
         "갱신신청기한": str(item.갱신신청기한),
         "D-day": d_day,
+        "알림(3M)": str(item.알림발송일),
+        "알림(1M)": str(item.알림발송일_1M),
         "제조/수입": item.제조수입,
         "전문/일반": item.전문일반,
         "발송상태": _send_status(ym),
+        "_알림일": nearest_alert,
     })
 
 df_med = pd.DataFrame(med_rows)
 
-# 필터 적용
+# 필터 적용 (알림발송일 기준)
 mask = pd.Series([True] * len(df_med))
 if cat_filter == "의료기기":
     mask[:] = False
 if period != "전체":
-    mask &= (df_med["D-day"] >= 0) & (df_med["D-day"] <= period_days[period])
+    mask &= df_med["_알림일"].apply(lambda d: date_from <= d <= date_to)
 if status_filter == "발송완료":
     mask &= df_med["발송상태"].str.startswith("발송완료")
 elif status_filter == "미발송":
@@ -263,7 +279,7 @@ if search:
 df_med_f = df_med[mask].sort_values("D-day").reset_index(drop=True)
 
 if cat_filter != "의료기기":
-    cols = ["제품명", "허가번호", "품목유효기간", "갱신신청기한", "D-day", "제조/수입", "전문/일반", "발송상태"]
+    cols = ["제품명", "허가번호", "품목유효기간", "갱신신청기한", "D-day", "알림(3M)", "알림(1M)", "제조/수입", "전문/일반", "발송상태"]
     styled = (df_med_f[cols].style
               .map(highlight_dday, subset=["D-day"])
               .map(highlight_status, subset=["발송상태"]))
@@ -280,6 +296,8 @@ dev_rows = []
 for item in devices:
     d_day = (item.갱신신청기한_시작 - today).days
     ym = f"{item.갱신신청기한_시작.year}-{item.갱신신청기한_시작.month:02d}"
+    alert_dates = [d for d in [item.알림발송일, item.알림발송일_1M] if d >= today]
+    nearest_alert = min(alert_dates) if alert_dates else item.알림발송일
     dev_rows.append({
         "제품명": item.제품명,
         "품목명": item.품목명,
@@ -287,18 +305,21 @@ for item in devices:
         "유효기간": f"{item.유효기간_시작} ~ {item.유효기간_종료}",
         "갱신신청기한": f"{item.갱신신청기한_시작} ~ {item.갱신신청기한_종료}",
         "D-day": d_day,
+        "알림(3M)": str(item.알림발송일),
+        "알림(1M)": str(item.알림발송일_1M),
         "제조/수입": item.제조수입,
         "발송상태": _send_status(ym, "의료기기"),
+        "_알림일": nearest_alert,
     })
 
 df_dev = pd.DataFrame(dev_rows)
 
-# 필터 적용
+# 필터 적용 (알림발송일 기준)
 mask = pd.Series([True] * len(df_dev))
 if cat_filter == "의약품":
     mask[:] = False
 if period != "전체":
-    mask &= (df_dev["D-day"] >= 0) & (df_dev["D-day"] <= period_days[period])
+    mask &= df_dev["_알림일"].apply(lambda d: date_from <= d <= date_to)
 if status_filter == "발송완료":
     mask &= df_dev["발송상태"].str.startswith("발송완료")
 elif status_filter == "미발송":
@@ -310,7 +331,7 @@ if search:
 df_dev_f = df_dev[mask].sort_values("D-day").reset_index(drop=True)
 
 if cat_filter != "의약품":
-    cols = ["제품명", "품목명", "품목허가번호", "유효기간", "갱신신청기한", "D-day", "제조/수입", "발송상태"]
+    cols = ["제품명", "품목명", "품목허가번호", "유효기간", "갱신신청기한", "D-day", "알림(3M)", "알림(1M)", "제조/수입", "발송상태"]
     styled = (df_dev_f[cols].style
               .map(highlight_dday, subset=["D-day"])
               .map(highlight_status, subset=["발송상태"]))
