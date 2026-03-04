@@ -1,5 +1,5 @@
 import sys
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 
 # src 모듈 import 경로 설정
@@ -18,7 +18,7 @@ st.set_page_config(
     layout="wide",
 )
 
-st.title("갱신 대상 목록")
+st.title("품목갱신 알림 대시보드")
 
 config = load_config(Path(__file__).resolve().parent.parent / "config.yaml")
 paths = get_file_paths(config)
@@ -29,6 +29,68 @@ log_path = base / get_log_path(config)
 history = read_send_history(log_path) if log_path.exists() else []
 
 today = date.today()
+
+# ================================================================
+# 6개월 이내 신청 마감 현황
+# ================================================================
+cutoff_6m = today + timedelta(days=180)
+
+upcoming_med = [i for i in medicines if today <= i.갱신신청기한 <= cutoff_6m]
+upcoming_dev = [i for i in devices if today <= i.갱신신청기한_시작 <= cutoff_6m]
+
+col1, col2, col3, col4 = st.columns(4)
+col1.metric("전체 관리 품목", f"{len(medicines) + len(devices)}건",
+            f"의약품 {len(medicines)} / 의료기기 {len(devices)}")
+col2.metric("6개월 이내 마감", f"{len(upcoming_med) + len(upcoming_dev)}건",
+            f"의약품 {len(upcoming_med)} / 의료기기 {len(upcoming_dev)}")
+col3.metric("3개월 이내 마감",
+            f"{sum(1 for i in medicines if today <= i.갱신신청기한 <= today + timedelta(days=90)) + sum(1 for i in devices if today <= i.갱신신청기한_시작 <= today + timedelta(days=90))}건")
+col4.metric("1개월 이내 마감",
+            f"{sum(1 for i in medicines if today <= i.갱신신청기한 <= today + timedelta(days=30)) + sum(1 for i in devices if today <= i.갱신신청기한_시작 <= today + timedelta(days=30))}건")
+
+# --- 6개월 이내 마감 품목 요약 테이블 ---
+if upcoming_med or upcoming_dev:
+    upcoming_rows = []
+    for i in upcoming_med:
+        upcoming_rows.append({
+            "구분": "의약품",
+            "제품명/품목명": i.제품명,
+            "갱신신청기한": str(i.갱신신청기한),
+            "D-day": (i.갱신신청기한 - today).days,
+        })
+    for i in upcoming_dev:
+        upcoming_rows.append({
+            "구분": "의료기기",
+            "제품명/품목명": i.품목명,
+            "갱신신청기한": f"{i.갱신신청기한_시작} ~ {i.갱신신청기한_종료}",
+            "D-day": (i.갱신신청기한_시작 - today).days,
+        })
+    df_upcoming = pd.DataFrame(upcoming_rows).sort_values("D-day").reset_index(drop=True)
+
+    def _urgency_color(val):
+        if isinstance(val, int):
+            if val < 30:
+                return "background-color: #FFCDD2; font-weight: bold;"
+            elif val < 90:
+                return "background-color: #FFE0B2;"
+            elif val < 180:
+                return "background-color: #FFF9C4;"
+        return ""
+
+    st.dataframe(
+        df_upcoming.style.map(_urgency_color, subset=["D-day"]),
+        use_container_width=True,
+        hide_index=True,
+    )
+else:
+    st.info("6개월 이내 마감 품목이 없습니다.")
+
+st.divider()
+
+# ================================================================
+# 갱신 대상 목록 (전체)
+# ================================================================
+st.header("갱신 대상 목록")
 
 # 발송 완료된 대상월 세트 (category, target_year_month, alert_type)
 sent_set = {
