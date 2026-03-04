@@ -15,6 +15,8 @@ log:
 recipients:
   to:
     - "jisoo.kim@samyang.com"
+    - "gyeonghwan.kim@samyang.com"
+    - "taeyeon.jang@samyang.com"
   cc: []
   bcc: []
 
